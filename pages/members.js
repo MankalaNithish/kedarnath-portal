@@ -214,7 +214,7 @@ export default function About() {
                     Kedarnath Annadana Seva Samithi - Siddipet Regd. No. 4/2020
                 </div>
                 <div className={styles.gridcontainer}>
-                    <span className={styles.gridheading}>Hon'ble Members</span>
+                    <span className={styles.gridheading}>Hon&apos;ble Members</span>
                     <Grid container spacing={2} columns={9} className={styles.grid}>
                         {honMems.map(({name, phone, designation, picName}, index) => (
                             <Grid item xs={9} md={3} key={index}>
