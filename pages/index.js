@@ -39,7 +39,7 @@ export default function Home() {
   return (
     <Layout>
       <Head>
-        <title>Kedarnath Seva Samithi Siddipet</title>
+        <title>Kedarnath Annadana Seva Samithi Siddipet</title>
         <meta name="description" content="This is a portal for kedarntah annadana seva samithi siddipet" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />

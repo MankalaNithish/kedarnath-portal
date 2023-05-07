@@ -1,0 +1,47 @@
+.postsContainer {
+    /* background-image: url('../public/kedarnath_background.jpg?fit=crop&auto=format&width=100vw');
+    background-repeat: no-repeat;
+    background-position-x: center; */
+    margin-top: 20px;
+}
+
+.postFooter {
+    padding: 10px 0px;
+    margin: 0px 10px;
+    height: 30px;
+}
+
+.postDescription {
+    margin-top: 10px;
+    max-height: 40px;
+    overflow: hidden;
+}
+
+.addPost {
+    float: right;
+    z-index: 1;
+    position: fixed;
+    right: 20px;
+    bottom: 60px;
+    background-color: darkslategray;
+    font-weight: bold;
+    color: aliceblue;
+}
+
+.addPost:hover {
+    transform: none;
+    background-color: darkslategray;
+}
+
+@media (max-width: 700px) {
+    .addPost {
+        height: 60px;
+        width: 60px;
+        border-radius: 15px;
+        padding: 10px;
+    }
+}
+
+.descInput {
+    margin-bottom: 10px;
+}

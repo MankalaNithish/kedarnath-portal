@@ -15,7 +15,7 @@
   max-width: var(--max-width);
   width: 100%;
   z-index: 2;
-  font-family: var(--font-mono);
+  /* font-family: var(--font-mono); */
 }
 
 .description a {
@@ -36,7 +36,7 @@
 
 .code {
   font-weight: 700;
-  font-family: var(--font-mono);
+  /* font-family: var(--font-mono); */
 }
 
 /* .grid {
@@ -328,7 +328,7 @@
 .membertext {
   width: 80%;
   display: block;
-  text-align: justify;
+  text-align: left;
   display: flex;
   flex-direction: column;
 }
@@ -377,4 +377,11 @@
 .mainpageimage:hover {
   transform: scale(1.05);
   z-index: 100;
+}
+
+.postCard {
+  background-color: aliceblue;
+  align-items: center;
+  margin: auto;
+  margin-bottom: 20px;
 }

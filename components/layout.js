@@ -2,9 +2,11 @@ import * as React from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import styles from '@/styles/Home.module.css'
-import { AppBar, BottomNavigation, BottomNavigationAction, Box, Container, IconButton, Menu, MenuItem, Toolbar } from "@mui/material";
+import { AppBar, BottomNavigation, BottomNavigationAction, Box, Button, Container, IconButton, Menu, MenuItem, Toolbar } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Facebook, Mail } from '@mui/icons-material';
+import { Facebook, Mail, Payments } from '@mui/icons-material';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 const pages = [
     {
@@ -12,17 +14,26 @@ const pages = [
         route: '/'
     },
     {
+        displayName: 'Members',
+        route: 'members'
+    },
+    {
+        displayName: 'Posts',
+        route: 'posts'
+    },
+    {
         displayName: 'About',
         route: 'about'
     },
     {
-        displayName: 'Members',
-        route: 'members'
-    }
+        displayName: 'Member Login',
+        route: 'login'
+    },
 ];
 
 export default function Layout({children}) {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
+    const router = useRouter();
 
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
@@ -31,6 +42,9 @@ export default function Layout({children}) {
     const handleCloseNavMenu = () => {
         setAnchorElNav(null);
     };
+
+    React.useEffect(() => {}, []);
+
     return (
         <main className={styles.main}>
             <AppBar position="static">
@@ -113,6 +127,12 @@ export default function Layout({children}) {
                     icon={<Mail/>}
                     onClick={() => window.open('mailto:nithish.fourns@gmail.com', '_blank')}
                 ></BottomNavigationAction>
+                <BottomNavigationAction
+                    label='Donation'
+                    icon={<Payments/>}
+                    onClick={() => router.push('/donation')}
+                >
+                </BottomNavigationAction>
             </BottomNavigation>
         </main>
     )
