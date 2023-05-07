@@ -32,6 +32,46 @@ const itemData = [
     title: 'kedarnath2',
     cols: 1,
     rows: 1
+  },
+  {
+    img: '5.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '6.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '7.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '8.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '9.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '10.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '11.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '12.jpeg',
+    cols: 1,
+    rows: 1
   }
 ];
 
@@ -51,7 +91,7 @@ export default function Home() {
             <img
               src={`${item.img}?w=164&h=164&fit=crop&auto=format`}
               // srcSet={`${item.img}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-              alt={item.title}
+              alt={item.title || `kedarnath${item.img.split('.')[0]}`}
               loading="lazy"
               className={styles.mainpageimage}
             />

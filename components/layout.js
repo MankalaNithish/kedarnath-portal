@@ -6,7 +6,6 @@ import { AppBar, BottomNavigation, BottomNavigationAction, Box, Button, Containe
 import MenuIcon from "@mui/icons-material/Menu";
 import { Facebook, Mail, Payments } from '@mui/icons-material';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
 
 const pages = [
     {
@@ -17,18 +16,22 @@ const pages = [
         displayName: 'Members',
         route: 'members'
     },
-    {
-        displayName: 'Posts',
-        route: 'posts'
-    },
+    // {
+    //     displayName: 'Posts',
+    //     route: 'posts'
+    // },
     {
         displayName: 'About',
         route: 'about'
     },
     {
-        displayName: 'Member Login',
-        route: 'login'
+        displayName: 'Donation',
+        route: 'donation'
     },
+    // {
+    //     displayName: 'Member Login',
+    //     route: 'login'
+    // },
 ];
 
 export default function Layout({children}) {

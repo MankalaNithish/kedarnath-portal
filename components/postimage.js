@@ -1,6 +1,7 @@
 import { Grid, ImageList, ImageListItem, Button } from "@mui/material";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import Image from "next/image";
 
 export default function PostImage({images}) {
     const [index, setIndex] = useState(0);
@@ -34,7 +35,7 @@ export default function PostImage({images}) {
             <Grid item xs={8}>
                 <ImageList cols={1}>
                     <ImageListItem>
-                        <img src={`data:${images[index].contentType};base64,${images[index].data}`}></img>
+                        <Image src={`data:${images[index].contentType};base64,${images[index].data}`}></Image>
                     </ImageListItem>
                 </ImageList>
             </Grid>
