@@ -1,4 +1,4 @@
-import { DialogContent } from '@mui/material';
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material';
 import DialogTitle from '@mui/material/DialogTitle';
 
 export default function PostForm() {

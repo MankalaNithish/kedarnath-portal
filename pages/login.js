@@ -17,16 +17,16 @@ export default function Login() {
         if (password !== 'adminkedar3456') {
             setHasError(true);
         }
-        sessionStorage.setItem('isLoggedIn', true);
+        typeof window !== 'undefined' && sessionStorage.setItem('isLoggedIn', true);
         router.push('/');
     }
 
     function isLoggedIn() {
-        return sessionStorage.getItem('isLoggedIn');
+        return typeof window !== 'undefined' && sessionStorage.getItem('isLoggedIn');
     }
 
     function logout() {
-        sessionStorage.removeItem('isLoggedIn');
+        typeof window !== 'undefined' && sessionStorage.removeItem('isLoggedIn');
         router.push('/');
     }
 
