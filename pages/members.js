@@ -2,7 +2,8 @@ import Layout from "@/components/layout";
 import MemberContact from "@/components/member-contact";
 import styles from "@/styles/Home.module.css";
 import { Grid } from "@mui/material";
-import { honMems, mainMems, commiteeMems, members } from "@/pages/data/members.json";
+import totalMembers from "@/pages/data/members.json";
+const { honMems, mainMems, commiteeMems, members } = totalMembers;
 
 export default function Members() {
     return (

@@ -197,32 +197,32 @@ export default function Posts() {
                 : <></>}
             </div>
             {isLoading && <p>Loading...</p>}
-            <Dialog open={open}>
-                <DialogTitle>Add Post</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="description"
-                        label="Post Description"
-                        fullWidth
-                        variant="standard"
-                        onChange={(event) => setDescription(event.target.value)}
-                        className={postStyles.descInput}
-                    />
-                    <Input
-                        type="file"
-                        inputProps={{accept: 'image/jpeg, image/png, image/jpg', multiple: true}}
-                        placeholder="Add the photos"
-                        onChange={handleFileChange}
-                        >
-                    </Input>
-                    <DialogActions>
-                        <Button onClick={closeModal}>Cancel</Button>
-                        <Button onClick={submitPost}>Post</Button>
-                    </DialogActions>
-                </DialogContent>
-            </Dialog>
+        <Dialog open={open}>
+            <DialogTitle>Add Post</DialogTitle>
+            <DialogContent>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="description"
+                    label="Post Description"
+                    fullWidth
+                    variant="standard"
+                    onChange={(event) => setDescription(event.target.value)}
+                    className={postStyles.descInput}
+                />
+                <Input
+                    type="file"
+                    inputProps={{accept: 'image/jpeg, image/png, image/jpg', multiple: true}}
+                    placeholder="Add the photos"
+                    onChange={handleFileChange}
+                    >
+                </Input>
+                <DialogActions>
+                    <Button onClick={closeModal}>Cancel</Button>
+                    <Button onClick={submitPost}>Post</Button>
+                </DialogActions>
+            </DialogContent>
+        </Dialog>
         </Layout>
     )
 }

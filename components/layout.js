@@ -25,6 +25,10 @@ const pages = [
         route: 'about'
     },
     {
+        displayName: 'Reviews',
+        route: '/reviews'
+    },
+    {
         displayName: 'Donation',
         route: 'donation'
     },

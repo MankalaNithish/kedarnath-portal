@@ -3,12 +3,15 @@ const next = require("next");
 const restify = require("express-restify-mongoose");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const jsonServer = require('json-server');
+const jsonRouter = jsonServer.router('db.json');
 
 // Import your Mongoose models
 const { User, Post } = require("./models");
 
 // Create a new Express app
 const app = express();
+app.use('/api', jsonRouter);
 
 // Connect to your MongoDB database
 if (process.env.MONGODB_URI) {

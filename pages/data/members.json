@@ -368,6 +368,22 @@
             "name": "Kamidi Jalandar Reddy",
             "phone": "9177589999",
             "place": "Hyderabad"
+        },
+        {
+            "name": "Venishetty Ashish",
+            "phone": "9849684684",
+            "place": "Siddipet",
+            "picName": "venishettyashish"
+        },
+        {
+            "name": "Khanderao Vijay Prakash Rao",
+            "phone": "9440529525",
+            "place": "Siddipet"
+        },
+        {
+            "name": "Veeramalla Satish",
+            "phone": "9618081282",
+            "place": "Hyderabad"
         }
     ]
 }
