@@ -15,9 +15,12 @@ export default function Reviews() {
     const [error, setError] = useState(false);
 
     async function fetchData() {
-        let response = await axios.get(`api/reviews?_sort=id&_order=desc&_page=${page + 1}`);
-        setReviews(response.data);
-        console.log(reviews);
+        try {
+            let response = await axios.get(`api/v1/reviews?_sort=id&_order=desc&_page=${page + 1}`);
+            setReviews(response.data);
+        } catch(e) {
+            console.log(e);
+        }
     }
 
     useEffect(() => {
@@ -42,7 +45,7 @@ export default function Reviews() {
             date: new Date()
         };
         try {
-            await axios.post('api/reviews', object);
+            await axios.post('api/v1/reviews', object);
             setOpen(false);
             setPage(0);
             await fetchData();
