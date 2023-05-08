@@ -11,7 +11,7 @@ const { User, Post } = require("./models");
 
 // Create a new Express app
 const app = express();
-app.use('/api', jsonRouter);
+app.use('/api/v1', jsonRouter);
 
 // Connect to your MongoDB database
 if (process.env.MONGODB_URI) {
