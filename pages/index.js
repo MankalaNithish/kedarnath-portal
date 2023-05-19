@@ -2,8 +2,6 @@ import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import Layout from '@/components/layout'
 import styles from '@/styles/Home.module.css'
-import Link from 'next/link'
-import Image from 'next/image'
 import { ImageList, ImageListItem } from '@mui/material'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -70,6 +68,56 @@ const itemData = [
   },
   {
     img: '12.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '13.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '14.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '15.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '16.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '17.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '18.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '19.jpg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '20.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '21.jpeg',
+    cols: 1,
+    rows: 1
+  },
+  {
+    img: '22.jpeg',
     cols: 1,
     rows: 1
   }
