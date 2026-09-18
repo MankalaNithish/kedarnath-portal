@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// Deploy with:  firebase deploy --only firestore:rules
+//
+// Anyone may read reviews and submit a new one. Nobody can edit or delete an
+// existing review through the public API — that is what left the previous
+// json-server endpoint open to having every review wiped by a stranger.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+
+      allow create: if
+        request.resource.data.keys().hasOnly(['name', 'description', 'date'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.description is string
+        && request.resource.data.description.size() > 0
+        && request.resource.data.description.size() <= 2000
+        && request.resource.data.date is string;
+
+      // Immutable once written.
+      allow update, delete: if false;
+    }
+
+    // Nothing else is reachable.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

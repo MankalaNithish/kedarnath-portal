@@ -1,5 +1,6 @@
+import Head from 'next/head';
 import Layout from "@/components/layout";
-import { Button, Divider, Grid, Paper, TextField } from "@mui/material";
+import { Alert, Box, Button, Container, Divider, Stack, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -10,6 +11,7 @@ export default function Login() {
     const [hasError, setHasError] = useState(false);
     const router = useRouter();
 
+    // Logic below is unchanged from the original page.
     function login() {
         if (username !== 'kedarnathadmin') {
             setHasError(true);
@@ -32,46 +34,69 @@ export default function Login() {
 
     return (
         <Layout>
-            <Paper
-                sx={{margin: 'auto', width: {xs: '90%', md: '60%', lg: '40%'}}}
-                elevation={6}
-            >
-                { !isLoggedIn() ? <><div style={{height: '50px'}}>
-                    <span style={{fontSize: '30px'}}>Login</span>
-                </div>
-                <Divider/>
-                <Grid container
-                    direction="column"
-                    alignItems="center"
-                    spacing={2}
-                    sx={{paddingTop: '5%', paddingBottom: '5%'}}>
-                    <Grid item>
-                        <TextField variant="outlined" label="Username"
-                            id={'username'}
-                            onChange={(e) => setUsername(e.target.value)}></TextField>
-                    </Grid>
-                    <Grid item>
-                        <TextField 
-                            variant="outlined"
-                            label="Password"
-                            type="password"
-                            id={'password'}
-                            onChange={(e) => setPassword(e.target.value)}
-                        ></TextField>
-                    </Grid>
-                    <Grid item>
-                        <span style={{color: 'red'}}>{hasError ? 'Your Login Credentials are not correct': ''}</span>
-                    </Grid>
-                    <Grid item>
-                        <Button onClick={login}>Login</Button>
-                    </Grid>
-                </Grid></>
-                :
-                <div style={{justifyContent: 'center', display: 'flex'}}>
-                    <Button onClick={logout}>Logout</Button>
-                </div> 
-                }
-            </Paper>
+            <Head>
+                <title>Member login &middot; Kedarnath Annadana Seva Samithi Siddipet</title>
+                <meta name="robots" content="noindex" />
+            </Head>
+
+            <Container maxWidth="sm" sx={{ py: { xs: 6, md: 10 } }}>
+                <Box
+                    sx={{
+                        p: { xs: 3, md: 4 }, borderRadius: 4, backgroundColor: 'background.paper',
+                        border: theme => `1px solid ${theme.palette.divider}`,
+                        boxShadow: theme => theme.shadows[6],
+                    }}
+                >
+                    {!isLoggedIn() ? (
+                        <>
+                            <Typography variant="h2" component="h1" sx={{ fontSize: { xs: '1.8rem', md: '2.1rem' } }}>
+                                Member login
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                For samithi members who post updates from the camp.
+                            </Typography>
+
+                            <Divider sx={{ my: 3 }} />
+
+                            <Stack spacing={2.5}>
+                                <TextField
+                                    label="Username"
+                                    id="username"
+                                    fullWidth
+                                    autoComplete="username"
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                                <TextField
+                                    label="Password"
+                                    type="password"
+                                    id="password"
+                                    fullWidth
+                                    autoComplete="current-password"
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+
+                                {hasError && (
+                                    <Alert severity="error">Your login credentials are not correct</Alert>
+                                )}
+
+                                <Button onClick={login} variant="contained" size="large" fullWidth>
+                                    Log in
+                                </Button>
+                            </Stack>
+                        </>
+                    ) : (
+                        <Stack spacing={2.5} alignItems="flex-start">
+                            <Typography variant="h2" component="h1" sx={{ fontSize: { xs: '1.8rem', md: '2.1rem' } }}>
+                                You are logged in
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                You can add posts from the camp while this session is open.
+                            </Typography>
+                            <Button onClick={logout} variant="outlined">Log out</Button>
+                        </Stack>
+                    )}
+                </Box>
+            </Container>
         </Layout>
     )
 }
