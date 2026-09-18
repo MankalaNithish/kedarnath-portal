@@ -33,3 +33,7 @@ yarn-error.log*
 
 package-lock.json
 .gstack/
+
+# firebase emulator
+*-debug.log
+.firebase/

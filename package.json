@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "node server.js",
-    "lint": "next lint"
+    "lint": "next lint",
+    "emulator": "firebase emulators:start --only firestore --project demo-kedarnath"
   },
   "dependencies": {
     "@emotion/react": "^11.10.6",
