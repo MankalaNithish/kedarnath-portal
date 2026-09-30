@@ -14,9 +14,12 @@ export default function Login() {
     const router = useRouter();
 
     // Server-side login first: a success sets the signed HttpOnly session
-    // cookie that the /admin portal and the gallery/news APIs require. If the
-    // auth API is unreachable (e.g. static hosting), fall back to the original
-    // client-side check so the page keeps its historical behavior.
+    // cookie that the /admin portal and the gallery/news APIs require, then
+    // goes straight to the admin portal — that is where the "Upload photos"
+    // and "Write article" buttons live; the public /gallery and /news pages
+    // are visitor views and never show them. If the auth API is unreachable
+    // (e.g. static hosting), fall back to the original client-side check so
+    // the page keeps its historical behavior.
     async function login() {
         setHasError(false);
         try {
@@ -28,7 +31,7 @@ export default function Login() {
             });
             if (res.ok) {
                 typeof window !== 'undefined' && sessionStorage.setItem('isLoggedIn', true);
-                router.push('/');
+                router.push('/admin');
                 return;
             }
             setHasError(true);
@@ -46,7 +49,7 @@ export default function Login() {
             severity: 'warning',
         });
         typeof window !== 'undefined' && sessionStorage.setItem('isLoggedIn', true);
-        router.push('/');
+        router.push('/admin');
     }
 
     function isLoggedIn() {
