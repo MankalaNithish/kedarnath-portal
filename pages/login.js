@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Layout from "@/components/layout";
+import Toast from "@/components/Toast";
 import { Alert, Box, Button, Container, Divider, Stack, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -9,16 +10,41 @@ export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [hasError, setHasError] = useState(false);
+    const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
     const router = useRouter();
 
-    // Logic below is unchanged from the original page.
-    function login() {
-        if (username !== 'kedarnathadmin') {
+    // Server-side login first: a success sets the signed HttpOnly session
+    // cookie that the /admin portal and the gallery/news APIs require. If the
+    // auth API is unreachable (e.g. static hosting), fall back to the original
+    // client-side check so the page keeps its historical behavior.
+    async function login() {
+        setHasError(false);
+        try {
+            const res = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ username, password }),
+            });
+            if (res.ok) {
+                typeof window !== 'undefined' && sessionStorage.setItem('isLoggedIn', true);
+                router.push('/');
+                return;
+            }
             setHasError(true);
+            return;
+        } catch {
+            // API not reachable — fall through to the legacy client-side check.
         }
-        if (password !== 'adminkedar3456') {
+        if (username !== 'kedarnathadmin' || password !== 'adminkedar3456') {
             setHasError(true);
+            return;
         }
+        setToast({
+            open: true,
+            message: 'Signed in locally. The admin portal and photo APIs need the Node server (npm start).',
+            severity: 'warning',
+        });
         typeof window !== 'undefined' && sessionStorage.setItem('isLoggedIn', true);
         router.push('/');
     }
@@ -28,7 +54,9 @@ export default function Login() {
     }
 
     function logout() {
+        // Clear both the legacy flag and the server session cookie.
         typeof window !== 'undefined' && sessionStorage.removeItem('isLoggedIn');
+        fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
         router.push('/');
     }
 
@@ -90,13 +118,18 @@ export default function Login() {
                                 You are logged in
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                You can add posts from the camp while this session is open.
+                                You can add posts, manage the gallery and publish news while this session is open.
                             </Typography>
-                            <Button onClick={logout} variant="outlined">Log out</Button>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                                <Button component="a" href="/admin" variant="contained">Go to admin portal</Button>
+                                <Button onClick={logout} variant="outlined">Log out</Button>
+                            </Stack>
                         </Stack>
                     )}
                 </Box>
             </Container>
+
+            <Toast toast={toast} onClose={() => setToast(t => ({ ...t, open: false }))} />
         </Layout>
     )
 }

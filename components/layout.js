@@ -12,15 +12,18 @@ import { Facebook, Mail, Payments } from '@mui/icons-material';
 import ThemeToggle from './ThemeToggle';
 import { useAnimation, fadeInUp, useStagger } from './motion';
 
-// Same five destinations as before. Hrefs are now absolute so they resolve
-// identically from any path; Posts and Member Login remain out of the nav and
-// reachable directly at /posts and /login.
+// Same destinations as before, plus Gallery, News, and an explicit Admin
+// Login entry. Hrefs are absolute so they resolve identically from any path;
+// Posts remains out of the nav and reachable directly at /posts.
 const pages = [
   { displayName: 'Home', route: '/' },
+  { displayName: 'Gallery', route: '/gallery' },
+  { displayName: 'News', route: '/news' },
   { displayName: 'Members', route: '/members' },
   { displayName: 'About', route: '/about' },
   { displayName: 'Reviews', route: '/reviews' },
   { displayName: 'Donation', route: '/donation' },
+  { displayName: 'Admin Login', route: '/login' },
 ];
 
 const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=100083534350470';

@@ -25,7 +25,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
+# local env files — .env IS committed (safe defaults only); real secrets go in
+# .env.local, which git ignores. Never put real passwords/keys in .env.
 .env*.local
 
 # vercel
