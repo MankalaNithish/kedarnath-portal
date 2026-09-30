@@ -6,12 +6,14 @@ import {
 } from '@mui/material';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import NewspaperOutlined from '@mui/icons-material/NewspaperOutlined';
+import PostAddOutlined from '@mui/icons-material/PostAddOutlined';
 import Layout from '@/components/layout';
 import EmptyState from '@/components/EmptyState';
 import ErrorState from '@/components/ErrorState';
 import { NewsSkeleton } from '@/components/SkeletonCard';
 import NewsCard from '@/components/NewsCard';
 import { useAnimation, fadeInUp, useStagger } from '@/components/motion';
+import useAdminSession from '@/lib/client/useAdminSession';
 
 /**
  * Public news feed — stories and camp updates the samithi has published
@@ -28,6 +30,10 @@ export default function News() {
   const [total, setTotal] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
   const [loadFailed, setLoadFailed] = React.useState(false);
+  // Members who are logged in get a shortcut to the article editor, opened
+  // right in the admin portal — the session cookie is shared across tabs,
+  // so no second login is needed when they get there.
+  const { isAdmin } = useAdminSession();
 
   const item = useAnimation(fadeInUp);
   const group = useStagger(0.05);
@@ -73,7 +79,25 @@ export default function News() {
       </Head>
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 7 } }}>
-        <Typography variant="h1" component="h1">News</Typography>
+        <Stack
+          direction="row"
+          alignItems="baseline"
+          justifyContent="space-between"
+          sx={{ flexWrap: 'wrap', gap: 1 }}
+        >
+          <Typography variant="h1" component="h1">News</Typography>
+          {isAdmin && (
+            <Button
+              component={Link}
+              href="/admin?write=1"
+              variant="contained"
+              startIcon={<PostAddOutlined />}
+              sx={{ flexShrink: 0 }}
+            >
+              Write article
+            </Button>
+          )}
+        </Stack>
         <Typography variant="subtitle1" color="text.secondary" sx={{ maxWidth: '62ch', mt: 1.5 }}>
           Updates from the camp — how many plates were served, how the yatra is
           flowing, and what the volunteers are seeing at 3,583 m.

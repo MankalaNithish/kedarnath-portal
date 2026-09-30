@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   Box, Button, Card, Chip, Container, Dialog, DialogActions, DialogContent,
   DialogTitle, IconButton, LinearProgress, Stack, Tab, Tabs, TextField,
@@ -49,6 +50,23 @@ export default function AdminPortal() {
   const { checking, isAdmin } = useAdminSession();
 
   const [tab, setTab] = React.useState(0);
+
+  // Deep links from the public pages: /admin?upload=1 opens the photo upload
+  // dialog, /admin?write=1 opens the article editor. The HttpOnly session
+  // cookie is shared across tabs, so a member clicking "Upload photos" on
+  // /gallery or "Write article" on /news lands here already authorized.
+  const router = useRouter();
+  React.useEffect(() => {
+    if (checking || !isAdmin) return;
+    if (router.query.upload) {
+      setUploadOpen(true);
+      router.replace('/admin', undefined, { shallow: true });
+    } else if (router.query.write) {
+      setTab(1);
+      setNewsDialog('new');
+      router.replace('/admin', undefined, { shallow: true });
+    }
+  }, [checking, isAdmin, router]);
 
   // Gallery state
   const [gallery, setGallery] = React.useState({ items: [], categories: [], total: 0 });

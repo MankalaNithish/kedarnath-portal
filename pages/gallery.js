@@ -1,16 +1,19 @@
 import * as React from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
   Box, Button, Chip, Container, Stack, Typography,
 } from '@mui/material';
 import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
+import CloudUploadOutlined from '@mui/icons-material/CloudUploadOutlined';
 import Layout from '@/components/layout';
 import EmptyState from '@/components/EmptyState';
 import ErrorState from '@/components/ErrorState';
 import { GallerySkeleton } from '@/components/SkeletonCard';
 import GalleryLightbox from '@/components/GalleryLightbox';
 import { useAnimation, fadeInUp, useStagger } from '@/components/motion';
+import useAdminSession from '@/lib/client/useAdminSession';
 
 /**
  * Public photo gallery — every photograph the camp has uploaded through
@@ -26,6 +29,10 @@ export default function Gallery() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [loadFailed, setLoadFailed] = React.useState(false);
   const [lightboxIndex, setLightboxIndex] = React.useState(null);
+  // Members who are logged in get a shortcut to the upload dialog, opened
+  // right in the admin portal — the session cookie is shared across tabs,
+  // so no second login is needed when they get there.
+  const { isAdmin } = useAdminSession();
 
   const item = useAnimation(fadeInUp);
   const group = useStagger(0.03);
@@ -75,10 +82,28 @@ export default function Gallery() {
             <Typography variant="caption">{total} photographs</Typography>
           )}
         </Stack>
-        <Typography variant="subtitle1" color="text.secondary" sx={{ maxWidth: '62ch', mb: 3 }}>
-          Scenes from the annadanam camp on the Kedarnath yatra — hot meals at 3,583 m,
-          the volunteers who cook them, and the pilgrims who share them.
-        </Typography>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          justifyContent="space-between"
+          sx={{ flexWrap: 'wrap', gap: 1, mb: 3 }}
+        >
+          <Typography variant="subtitle1" color="text.secondary" sx={{ maxWidth: '62ch' }}>
+            Scenes from the annadanam camp on the Kedarnath yatra — hot meals at 3,583 m,
+            the volunteers who cook them, and the pilgrims who share them.
+          </Typography>
+          {isAdmin && (
+            <Button
+              component={Link}
+              href="/admin?upload=1"
+              variant="contained"
+              startIcon={<CloudUploadOutlined />}
+              sx={{ flexShrink: 0 }}
+            >
+              Upload photos
+            </Button>
+          )}
+        </Stack>
 
         {isLoading && <GallerySkeleton />}
 
