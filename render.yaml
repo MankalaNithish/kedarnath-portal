@@ -1,0 +1,47 @@
+# Render Blueprint — the whole portal runs as ONE Web Service: the custom
+# Express server (server.js) serving Next.js pages, the /api/v1 auth, gallery
+# and news routes, and the MongoDB connection via Mongoose.
+#
+# Create it from the Render dashboard: New → Blueprint → pick this repo.
+# Render reads this file and asks only for the sync:false values (paste them
+# from Atlas / the Firebase console). Host env vars beat .env/.env.local —
+# see the loader at the top of server.js — so the committed defaults never
+# leak into production.
+#
+# MONGODB_URI must be an Atlas SRV string, and the Atlas cluster must allow
+# connections from 0.0.0.0/0 (Render's free-tier egress IPs are dynamic).
+# NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST is deliberately NOT listed — setting it
+# in production would send every review to 127.0.0.1:8080.
+services:
+  - type: web
+    name: kedarnath-portal
+    runtime: node
+    plan: free
+    region: singapore            # closest Render region to Siddipet, India
+    branch: main
+    autoDeploy: true
+    buildCommand: npm install && npm run build
+    startCommand: npm start      # NODE_ENV=production node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: MONGODB_URI
+        sync: false              # Atlas SRV URI — paste in the dashboard
+      - key: ADMIN_USERNAME
+        sync: false              # strong username for /admin (not the demo one)
+      - key: ADMIN_PASSWORD
+        sync: false              # strong password — never the demo pair
+      - key: ADMIN_SESSION_SECRET
+        generateValue: true      # Render creates a random value at first deploy
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+        sync: false
