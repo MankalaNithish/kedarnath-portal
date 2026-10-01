@@ -1,0 +1,40 @@
+# .clinerules — Kedarnath Portal
+
+## Critical implementation paths
+- The ONLY live API layer is the custom Express server (`server.js`) wrapping
+  Next. `pages/api/*` is vestigial. Anything needing gallery/news/auth APIs
+  must run under `node server.js`, not static hosting or `next dev`-only.
+- `npm start` sets NODE_ENV=production; `server.js` gates Next's mode on it.
+  Running bare `node server.js` silently boots DEV mode against the prod
+  `.next` — slow compiles and .next pollution. Always test with the script's
+  env shape (`NODE_ENV=production node server.js`).
+
+## Patterns learned (validate before re-using)
+- **Single-return rule for MUI components with Dialogs:** never early-return
+  loading/failed/empty states above a `<Dialog>` — the dialog unmounts and its
+  open-state button becomes silently dead. Compute state into a `content`
+  variable and render `{header}{content}` + dialogs in ONE return. This was
+  the 2026-10-01 "Add buttons do nothing on an empty DB" bug.
+- MUI Snackbar toasts auto-hide after 5s — UI probes (and humans) can miss
+  them; assert on network effects (DB rows, fetch logs) plus the toast.
+- Mongoose pluralizes model names: collections are `newsarticles`,
+  `galleryitems`, `users`, `posts` (lowercase). `db.newsArticles` silently
+  reads an empty namespace.
+
+## User preferences / workflow
+- Zero-cost infra only (temple/NGO project): Render free WS + Atlas M0.
+- User wants buttons/flows verified in a REAL browser, not just curl — the
+  admin UI shipped untested twice; browser smoke tests are now expected.
+- Dev box: no plain mongod on 27017 (TLS replica set of another system);
+  reuse docker container `kedar-test-mongo` (mongo:6 on 28017) for tests,
+  point the test server at `MONGODB_URI=mongodb://127.0.0.1:28017/kedarnath`
+  on a spare port (3108), and leave the DB clean afterwards.
+- No Playwright in this project: drive `/usr/bin/google-chrome --headless=new
+  --remote-debugging-port` via the `ws` package + CDP for UI verification.
+- `pkill -f <pattern>` can kill the agent's own shell (pattern matches the
+  command line); kill by exact PID from `ps`/pidfile instead.
+
+## Known quirks
+- `package-lock.json` is git-ignored (legacy decision) — Render runs
+  `npm install`, not `npm ci`.
+- `/api/v1/posts` 404 is pre-existing (json-server shadowing restify).

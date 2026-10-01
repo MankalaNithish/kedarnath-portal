@@ -1,5 +1,31 @@
 # Progress
 
+## Admin Add-buttons FIX (2026-10-01)
+- Root cause of "Add buttons not responding": GalleryTab + NewsTab early-
+  returned loading/failed/empty-list branches ABOVE their <Dialog> JSX, so on
+  an empty DB the dialogs were never in the tree — every button press toggled
+  state that nothing rendered. Fixed with a single-return `content` structure
+  in both tabs (pages/admin.js); dialogs now always mounted.
+- Bonus fixes found during verification: ?write=1 deep link used to open an
+  empty editor shell (no draft fields, Save would crash) — NewsTab now seeds
+  emptyDraft() when dialog==='new'; removed a redundant setNewsFailed(false).
+- Verified in headless Chrome (CDP via ws) against mongo:6 on 28017 + prod
+  server on 3108: 19/19 checks — login→/admin, both buttons open dialogs on
+  the EMPTY-state branch, real image upload (compress→POST 201→grid image→
+  toast), article create (201→auto-slug→list row→toast), ?upload=1 and
+  ?write=1 deep links. Clean 15/15 build; lint = 2 pre-existing posts.js
+  warnings only. DB left empty; test server stopped.
+- NOT YET COMMITTED/PUSHED. Next: commit pages/admin.js, push, confirm Render
+  redeploy, then browser-check the live site.
+
+## PRODUCTION VERIFIED (2026-09-30)
+Site live at https://kedarnath-portal.onrender.com — 15/15 live checks green
+(pages, auth incl. defaults login, gallery upload→image→delete, news
+draft→hidden→publish→visible→delete, forged-cookie 401s incl. public-secret
+attempt, pristine DB after cleanup). Render's generated ADMIN_SESSION_SECRET
+confirmed live (public-secret cookie rejected). Only follow-ups: park Vercel,
+optional warm-up pinger, optional strong ADMIN_PASSWORD later.
+
 ## Render + Atlas deploy prepared (2026-09-30)
 Option A executed: `render.yaml` Blueprint (node runtime, NODE_VERSION=22,
 singapore, free plan, `npm start`) + `SETUP.md` §7 production guide (Atlas M0,
@@ -16,6 +42,16 @@ Build clean; full live suite green again vs Docker mongo:6 @28017 (login/session
 cookie/rate limit/401s, gallery upload→image→patch→delete, news draft lifecycle
 + dup-slug 400, all 10 pages 200, DB left clean). Collections are Mongoose-
 pluralized lowercase: `newsarticles`, `galleryitems`, `users`, `posts`.
+
+## Admin-buttons UX round (2026-09-30, latest)
+- Login now lands on /admin (34aaec0); public /gallery + /news show
+  "Upload photos" / "Write article" buttons ONLY for a verified admin
+  session (ac1671f) — they deep-link to /admin?upload=1 / /admin?write=1
+  and the portal opens the matching dialog directly.
+- Clean local build (16 routes) + lint green; pushed; Render auto-deploy
+  verified by buildId comparison, live-bundle greps, session-API smoke.
+- Still open: park old Vercel project; optional warm-up pinger; optional
+  ADMIN_PASSWORD rotation (hash re-seeds on restart).
 
 ## What works (verified 2026-09-19)
 - Home static gallery, about, members, donation, reviews (Firestore), posts page,

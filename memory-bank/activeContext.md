@@ -1,8 +1,28 @@
 # Active Context
 
-## Current focus (2026-09-30)
-**Deploy = Option A executed: Render + MongoDB Atlas.** (User approved after
-the Vercel-vs-pages/api comparison; rationale from the 09-28 decision stands.)
+## Current focus (2026-10-01)
+**FIXED: dead Add buttons in the admin portal.** User reported "Upload photos"
+and "Write article" (all four buttons incl. public-page deep links) did
+nothing. Root cause: GalleryTab/NewsTab early-returned loading/failed/EMPTY
+states BEFORE the `<Dialog>` JSX at the bottom of the component, so on the
+empty production DB the dialogs were never mounted — clicks set state that
+opened nothing. Fix (pages/admin.js): compute loading/failed/empty/list into
+`content` and render `{header}{content}` + dialogs in ONE return, both tabs;
+plus NewsTab `useEffect` seeds `emptyDraft()` when `dialog==='new'` without a
+draft (the ?write=1 deep link opened an EMPTY editor before); removed a
+redundant `setNewsFailed(false)` line in loadNews. Verified end-to-end in
+headless Chrome via CDP (login → click buttons on the EMPTY-state branch →
+fill forms → real file chooser upload → 201s → rows in DB → deep links open
+dialogs): 19/19 checks pass; clean 15/15 build; lint unchanged (2 pre-existing
+posts.js warnings). Test DB left clean. NOT yet pushed/committed — commit and
+let Render auto-deploy; verify on the live site afterwards.
+
+## Production state (2026-09-30)
+Live at https://kedarnath-portal.onrender.com (15/15 smoke checks were green
+pre-fix). Admin creds defaults (kedarnathadmin/adminkedar3456); Render's
+generated ADMIN_SESSION_SECRET active. Follow-ups: park Vercel, optional
+warm-up pinger, optional ADMIN_PASSWORD rotation.
+
 Delivered in repo:
 - `render.yaml` Blueprint (repo root): ONE web service — runtime node, plan
   free, region singapore, build `npm install && npm run build`, start
@@ -31,6 +51,85 @@ Delivered in repo:
 Remaining manual steps (user, in browser): create Atlas M0 (user + allowlist
 + URI), create the Render Blueprint service, paste env values, run the §7.4
 smoke test, park the Vercel project.
+
+## Atlas cluster verified (2026-09-30, later)
+User created the M0 cluster (cluster0.3s94kgp.mongodb.net, SRV shards
+ac-6zoivro-shard-00-0{0,1,2}) + db user `nithishfourns_db_user`. Live
+connection test from the dev box (mongoose 6, same driver as prod) passed:
+auth OK, ping {ok:1}, db `kedarnath` selected, collections empty (normal).
+Final URI shape for Render:
+mongodb+srv://nithishfourns_db_user:<pw>@cluster0.3s94kgp.mongodb.net/kedarnath?retryWrites=true&w=majority&appName=Cluster0
+(User's original URI had the `<db_username>` placeholder — first test
+correctly failed with `bad auth` 8000, proving network path was fine.)
+User decision: running with the COMMITTED DEFAULT admin creds
+(kedarnathadmin/adminkedar3456) for now — accepted risks: public session
+secret allows offline cookie forgery (no rate limit on that path); public
+password only slows attackers via the 5/15min limiter. Recommended minimum
+mitigation: set ADMIN_SESSION_SECRET on Render (invisible to users, closes
+forgery). No user data exposed either way — gallery/news are public content.
+Still to confirm on Atlas before Render deploy: Network Access must be
+0.0.0.0/0 (Render egress ≠ this machine's IP).
+
+## Final Render env plan (user, 2026-09-30)
+User sets on Render: MONGODB_URI (the tested `/kedarnath` SRV URI) + the 6
+NEXT_PUBLIC_FIREBASE_* only. ADMIN_USERNAME / ADMIN_PASSWORD deliberately
+LEFT UNSET → committed .env defaults apply (kedarnathadmin/adminkedar3456).
+Deterministic by design: host env → .env loader (sets only undefined keys) →
+auth.js code fallback — all three paths yield the same pair. Must-verify on
+Render dashboard: ADMIN_SESSION_SECRET present (render.yaml generateValue
+auto-creates it in Blueprint flow; manual creation needs a pasted value —
+public dev secret would otherwise sign cookies). Do NOT set PORT manually
+(Render injects it; a hand-set 3002 breaks reachability). Post-deploy
+checks: login 200 with defaults, log shows "[auth] seeded admin user into
+the users collection", Atlas shows `users` in db kedarnath.
+
+## Deployment LIVE + fully verified (2026-09-30)
+URL: https://kedarnath-portal.onrender.com (Blueprint name kept). 15/15
+live checks from the dev box:
+- All 10 pages 200; /api/v1/auth/session exists ({"isAdmin":false}) — the
+  thing Vercel could never serve. Wake 0.6s (warm).
+- Auth: bad login 401; login with committed defaults kedarnathadmin → 200
+  {"ok":true,"isAdmin":true} + Secure HttpOnly cookie (Max-Age 43200);
+  session with cookie → {"isAdmin":true}; logout ok.
+- Gallery: upload 201 (id 6abd4052…), image bytes 200 image/png 70B
+  round-trip from Atlas, DELETE 200.
+- News: draft 201 (slug deployment-verification-article), anon detail 404
+  while draft, publish PATCH 200, then anon list total:1 + detail 200,
+  DELETE 200.
+- **Security: cookie FORGED WITH THE PUBLIC repo secret → 401** ⇒ Render's
+  generateValue ADMIN_SESSION_SECRET is live; default-creds decision is
+  bounded to the rate-limited login path only. Garbage-sig cookie also 401.
+- Anon writes 401 (test 10). DB left pristine (lists total 0; only the
+  seeded users doc remains). Test artifacts all deleted.
+Known UX reality: free tier sleeps after ~15 min idle (~1 min cold start);
+optional cron pinger on /api/v1/reviews every 10 min. Remaining user todos:
+park the old Vercel project; rotate ADMIN_PASSWORD to a strong value
+whenever ready (boot re-seeds the hash automatically).
+
+## UX round: add buttons discoverability (2026-09-30, latest)
+User (rightly) reported "no add button in gallery/news" after logging in —
+two compounding causes, both fixed and pushed:
+1. **Login went to `/` not the portal** (login.js router.push('/') in both
+   server-login and legacy fallback) → committed 34aaec0: both paths now
+   push('/admin').
+2. **Public pages had zero admin affordances by design** → committed
+   ac1671f: /gallery and /news now call useAdminSession() and render
+   "Upload photos" / "Write article" buttons ONLY when isAdmin (server-
+   verified cookie — visitors' pages unchanged). Buttons deep-link to
+   /admin?upload=1 and /admin?write=1; admin.js consumes the query params
+   (useEffect gated on !checking && isAdmin) to open the upload dialog or
+   switch to the news tab + 'new' editor, then router.replace('/admin',
+   {shallow:true}) strips the query so refresh doesn't reopen dialogs.
+Design notes: buttons link to the portal rather than duplicating dialogs —
+zero duplicated logic; cookie is shared across tabs so no re-login.
+Gotcha hit: two concurrent `next build` processes after a 30s tool timeout
+mid-build (remember: long builds → nohup+disown background, then poll);
+pkill pattern 'next build' self-matches its own shell — use 'next buil[d]'.
+Discarded .next and rebuilt clean (16 routes); lint clean on all 4 files.
+Live verification of the new deploy ran via buildId poller (/tmp/
+poll-deploy.sh → grep buildId from /login HTML, compare with local .next/
+BUILD_ID, then grep bundles for 'router.push("/admin")', 'admin?upload=1',
+'admin?write=1').
 
 ## Current focus (2026-09-19)
 **Gallery & News feature — IMPLEMENTED AND VERIFIED.** Plan in `PLAN.md` (§9 order
