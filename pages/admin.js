@@ -108,7 +108,6 @@ export default function AdminPortal() {
       const data = await apiFetch('/api/v1/news?includeDrafts=1&limit=50');
       setNews({ articles: data.articles || [], categories: data.categories || [], total: data.total || 0 });
     } catch {
-      setNewsFailed(false);
       setNewsFailed(true);
     } finally {
       setNewsLoading(false);
@@ -341,40 +340,32 @@ function GalleryTab({
     </Stack>
   );
 
+  // Render every state into `content`, but keep ONE return so the dialogs
+  // below are always mounted. Otherwise an empty/loading gallery would remove
+  // the upload dialog from the tree and the "Upload photos" buttons would do
+  // nothing (the dead-button bug on a fresh database).
+  let content;
   if (loading) {
-    return <Box>{header}<GallerySkeleton count={8} /></Box>;
-  }
-
-  if (failed) {
-    return (
-      <Box>
-        {header}
-        <EmptyState title="The gallery did not load" description="Check that the Node server is running, then try again." onRetry={onRetry} />
-      </Box>
+    content = <GallerySkeleton count={8} />;
+  } else if (failed) {
+    content = (
+      <EmptyState title="The gallery did not load" description="Check that the Node server is running, then try again." onRetry={onRetry} />
     );
-  }
-
-  if (gallery.items.length === 0) {
-    return (
-      <Box>
-        {header}
-        <EmptyState
-          icon={<ImageOutlined />}
-          title="No photographs yet"
-          description="Upload the first batch — every image is compressed in your browser before it is stored, so a full camp album fits in the free database tier."
-          action={(
-            <Button variant="contained" startIcon={<AddAPhotoOutlined />} onClick={openUpload}>
-              Upload photos
-            </Button>
-          )}
-        />
-      </Box>
+  } else if (gallery.items.length === 0) {
+    content = (
+      <EmptyState
+        icon={<ImageOutlined />}
+        title="No photographs yet"
+        description="Upload the first batch — every image is compressed in your browser before it is stored, so a full camp album fits in the free database tier."
+        action={(
+          <Button variant="contained" startIcon={<AddAPhotoOutlined />} onClick={openUpload}>
+            Upload photos
+          </Button>
+        )}
+      />
     );
-  }
-
-  return (
-    <Box>
-      {header}
+  } else {
+    content = (
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' } }}>
         {gallery.items.map(item => (
           <Card key={item.id} sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -404,6 +395,13 @@ function GalleryTab({
           </Card>
         ))}
       </Box>
+    );
+  }
+
+  return (
+    <Box>
+      {header}
+      {content}
 
       {/* Upload dialog */}
       <Dialog open={uploadOpen} onClose={() => !uploading && setUploadOpen(false)} fullWidth maxWidth="sm">
@@ -554,6 +552,16 @@ function NewsTab({
   const [slugEdited, setSlugEdited] = React.useState(false);
   const [coverPreview, setCoverPreview] = React.useState(null);
 
+  // Deep link (?write=1) sets dialog='new' without a draft object; give the
+  // editor a blank article whenever the dialog is in "new" mode with no draft
+  // yet, so its fields exist and Save cannot run against undefined.
+  React.useEffect(() => {
+    if (dialog === 'new' && !draft) {
+      setDraft(emptyDraft());
+      setSlugEdited(false);
+    }
+  }, [dialog, draft]);
+
   const startNew = () => {
     setDraft(emptyDraft());
     setSlugEdited(false);
@@ -663,40 +671,31 @@ function NewsTab({
     </Stack>
   );
 
+  // Same single-return pattern as GalleryTab: the article editor and delete
+  // dialogs must stay mounted in loading/failed/empty states, otherwise the
+  // "Write article" buttons do nothing while the list is empty.
+  let content;
   if (loading) {
-    return <Box>{listHeader}<AdminRowSkeleton rows={5} /></Box>;
-  }
-
-  if (failed) {
-    return (
-      <Box>
-        {listHeader}
-        <EmptyState title="News did not load" description="Check that the Node server is running, then try again." onRetry={onRetry} />
-      </Box>
+    content = <AdminRowSkeleton rows={5} />;
+  } else if (failed) {
+    content = (
+      <EmptyState title="News did not load" description="Check that the Node server is running, then try again." onRetry={onRetry} />
     );
-  }
-
-  if (news.articles.length === 0) {
-    return (
-      <Box>
-        {listHeader}
-        <EmptyState
-          icon={<PostAddOutlined />}
-          title="No news yet"
-          description="Write the first update — save it as a draft to prepare it privately, then publish with one tap."
-          action={(
-            <Button variant="contained" startIcon={<PostAddOutlined />} onClick={startNew}>
-              Write article
-            </Button>
-          )}
-        />
-      </Box>
+  } else if (news.articles.length === 0) {
+    content = (
+      <EmptyState
+        icon={<PostAddOutlined />}
+        title="No news yet"
+        description="Write the first update — save it as a draft to prepare it privately, then publish with one tap."
+        action={(
+          <Button variant="contained" startIcon={<PostAddOutlined />} onClick={startNew}>
+            Write article
+          </Button>
+        )}
+      />
     );
-  }
-
-  return (
-    <Box>
-      {listHeader}
+  } else {
+    content = (
       <Stack spacing={2}>
         {news.articles.map(article => (
           <Card key={article.id} sx={{ display: 'flex', alignItems: 'center', p: 1.5, gap: 2 }}>
@@ -749,6 +748,13 @@ function NewsTab({
           </Card>
         ))}
       </Stack>
+    );
+  }
+
+  return (
+    <Box>
+      {listHeader}
+      {content}
 
       {/* Create/edit article dialog */}
       <Dialog open={Boolean(dialog)} onClose={() => !saving && setDialog(null)} fullWidth maxWidth="md">
