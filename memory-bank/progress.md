@@ -1,5 +1,27 @@
 # Progress
 
+## news.js `Link` crash fix (2026-10-01, latest)
+- User hit "client error" on /news — but ONLY when logged in. Root cause:
+  pages/news.js used `component={Link}` on the admin-only "Write article"
+  button without `import Link from 'next/link'`. Anonymous visitors never
+  evaluate that JSX branch (`isAdmin` false), so every anon probe passed;
+  the moment a logged-in admin opened /news, React crashed with
+  `ReferenceError: Link is not defined` (client-side exception page).
+- Fixed dd4ceb2 (one-line import), lint-clean, pushed. Repo-wide audit: every
+  other `component={Link}` user (gallery.js, layout.js, index.js, admin.js,
+  NewsCard.js) already imports Link — news.js was the only offender.
+  NOTE: because Render has NOT deployed since 34aaec0, this fix rides the
+  same stalled-deploy queue as cbdfe6e; prod is still on the old build and
+  (old build) has its own admin-gated news JSX — verify prod after deploy.
+- Verified in headless Chrome (CDP): login → /news as admin → 4 headlines,
+  "Write article" link present (renders as `a[href="/admin?write=1"]`,
+  NOT a <button> — MUI `component={Link}`), click lands on /admin with the
+  news editor, zero client errors. Also confirmed BY DESIGN (not bugs):
+  drafts never appear on /news even for admins (server filters
+  `published:true` unless `?includeDrafts=1`; drafts are managed in /admin),
+  and the draft card lives only in the admin portal.
+
+
 ## Admin Add-buttons FIX (2026-10-01)
 - Root cause of "Add buttons not responding": GalleryTab + NewsTab early-
   returned loading/failed/empty-list branches ABOVE their <Dialog> JSX, so on
@@ -15,8 +37,14 @@
   toast), article create (201→auto-slug→list row→toast), ?upload=1 and
   ?write=1 deep links. Clean 15/15 build; lint = 2 pre-existing posts.js
   warnings only. DB left empty; test server stopped.
-- NOT YET COMMITTED/PUSHED. Next: commit pages/admin.js, push, confirm Render
-  redeploy, then browser-check the live site.
+- Committed e88d6b8 (fix) + 8dc7790 (docs) and pushed — but live-site
+  verification then exposed that production (buildId nx_MGC_ycF2GoJoJiCoPT)
+  predates even 34aaec0: the last FOUR pushes never deployed. Render
+  auto-deploy stalled (dashboard Events/Logs needed to see why); retriggered
+  with empty commit cbdfe6e and watching buildId (/tmp/kedar-poll.log).
+  Production browser test ready at /tmp/kedar-prod-test.js (login → Add
+  buttons → real upload → draft article → deep links → deletes both test rows,
+  leaving prod DB pristine) — rerun it after the deploy lands.
 
 ## PRODUCTION VERIFIED (2026-09-30)
 Site live at https://kedarnath-portal.onrender.com — 15/15 live checks green

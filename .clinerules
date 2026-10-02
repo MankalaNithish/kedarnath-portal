@@ -33,6 +33,30 @@
   --remote-debugging-port` via the `ws` package + CDP for UI verification.
 - `pkill -f <pattern>` can kill the agent's own shell (pattern matches the
   command line); kill by exact PID from `ps`/pidfile instead.
+- **Crashes hidden behind role/feature gates need BOTH-role testing:** JSX
+  only evaluated for admins (e.g. `isAdmin && <Button component={Link}...>`)
+  crashes nobody until someone logs in — a missing import sails through
+  anonymous browser checks. Test /news, /gallery etc. logged-out AND
+  logged-in (seeded rig makes this cheap).
+- MUI `<Button component={Link}>` renders as `<a role="button">` — probe
+  `a[href="..."]`, not `button`, when hunting admin action elements.
+- Chrome DOES store `Secure` cookies from http://127.0.0.1 (trustworthy
+  origin) — a Secure session cookie on the local prod-mode rig still works;
+  don't "fix" the NODE_ENV=production Secure flag for local testing.
+
+
+## Deploy verification lessons (2026-10-01)
+- A pushed commit is NOT a deployed commit. Before testing a fix on the live
+  site, compare the live buildId (grep `/_next/static/<id>/_buildManifest.js`
+  from any page HTML) against local `.next/BUILD_ID` — Render auto-deploy can
+  stall for several commits with no client-visible error.
+- Minified bundles are archaeology: grep the live `/login` page bundle for
+  `push("/admin")` vs `push("/")` to date the deployed code (pre/post 34aaec0);
+  grep the gallery bundle for "Upload photos" (pre/post ac1671f).
+- Corrected record: `package-lock.json` IS git-tracked (lockfileVersion 2,
+  untouched since 2fbd0f9) while still listed in .gitignore line 35
+  (ineffective for tracked files). Not a build blocker: render.yaml uses
+  `npm install && npm run build`, not `npm ci`.
 
 ## Known quirks
 - `package-lock.json` is git-ignored (legacy decision) — Render runs

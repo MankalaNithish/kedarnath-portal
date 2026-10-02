@@ -1,21 +1,46 @@
 # Active Context
 
 ## Current focus (2026-10-01)
-**FIXED: dead Add buttons in the admin portal.** User reported "Upload photos"
-and "Write article" (all four buttons incl. public-page deep links) did
-nothing. Root cause: GalleryTab/NewsTab early-returned loading/failed/EMPTY
-states BEFORE the `<Dialog>` JSX at the bottom of the component, so on the
-empty production DB the dialogs were never mounted — clicks set state that
-opened nothing. Fix (pages/admin.js): compute loading/failed/empty/list into
-`content` and render `{header}{content}` + dialogs in ONE return, both tabs;
-plus NewsTab `useEffect` seeds `emptyDraft()` when `dialog==='new'` without a
-draft (the ?write=1 deep link opened an EMPTY editor before); removed a
-redundant `setNewsFailed(false)` line in loadNews. Verified end-to-end in
-headless Chrome via CDP (login → click buttons on the EMPTY-state branch →
-fill forms → real file chooser upload → 201s → rows in DB → deep links open
-dialogs): 19/19 checks pass; clean 15/15 build; lint unchanged (2 pre-existing
-posts.js warnings). Test DB left clean. NOT yet pushed/committed — commit and
-let Render auto-deploy; verify on the live site afterwards.
+## Current focus (2026-10-01, evening)
+**User-reported /news client error FIXED (dd4ceb2, pushed).** `pages/news.js`
+used `component={Link}` on the admin-only "Write article" button without
+importing Link → `ReferenceError: Link is not defined` — but ONLY for
+logged-in admins; anonymous probes (all of ours) never executed that JSX
+branch. Lesson recorded in .clinerules: always browser-test BOTH roles.
+Verified fixed locally (prod-mode 3108, logged-in Chrome run: 4 headlines,
+Write-article link present + deep-links to /admin, zero client errors).
+Deploy queue now holds e88d6b8 + 8dc7790 + cbdfe6e + dd4ceb2 — Render still
+serves nx_MGC_ycF2GoJoJiCoPT (poller /tmp/kedar-poll.log). Local preview rig
+(3108, seed data intact) unaffected; server restarted on the fixed build.
+
+**FIX SHIPPED BUT RENDER NEVER DEPLOYED IT — auto-deploy pipeline stalled.**
+The admin Add-buttons fix (e88d6b8) + docs (8dc7790) were pushed 2026-10-01,
+but production verification exposed that the LIVE site still serves a build
+from BEFORE 34aaec0 (Sep-30): live login bundle has push("/") ×3 and NO
+push("/admin"); live gallery bundle lacks the ac1671f "Upload photos" button;
+live buildId nx_MGC_ycF2GoJoJiCoPT ≠ local c-YgOFqZ1MvtSsSXcBSMb. So the last
+FOUR commits never deployed (render.yaml has autoDeploy:true) — no deploy has
+succeeded since the Sep-30 verification. Cause not visible from outside:
+check Render dashboard → Events (webhook disconnect vs failing builds).
+Retrigger pushed as empty commit cbdfe6e; buildId poller running (/tmp/
+kedar-poll-deploy.sh → /tmp/kedar-poll.log). Production browser test ready
+(/tmp/kedar-prod-test.js: CDP over ws — login → Add buttons on the empty prod
+DB → real upload → draft article → both deep links → DELETE both test rows →
+assert DB back to 0). It already reproduced the OLD build's era marker
+(login lands on "/" = pre-34aaec0 behavior). Rerun it once the buildId flips.
+
+## Local preview rig with sample data (2026-10-01, later)
+For the user to preview gallery/news locally: server on 3108 (prod-mode,
+docker mongo 28017) seeded via /tmp/kedar-seed.sh with 3 gallery batches
+(8 photos from /usr/share/backgrounds resized by ImageMagick into /tmp/
+kedar-sample-imgs; categories Annadanam/Temple/Volunteers) + 5 news articles
+(4 published w/ covers + 1 admin-only draft). Idempotent (skips if gallery
+total > 0). Browser-verified: 8 imgs + 3 filter chips on /gallery; 4/4
+headlines on /news; draft invisible to anon; article detail SSR renders body;
+cover + gallery image GETs 200 image/jpeg. Server pid file /tmp/kedar-3108.pid.
+Wipe with: mongosh --quiet mongodb://127.0.0.1:28017/kedarnath --eval
+'db.galleryitems.deleteMany({}); db.newsarticles.deleteMany({})'.
+
 
 ## Production state (2026-09-30)
 Live at https://kedarnath-portal.onrender.com (15/15 smoke checks were green
